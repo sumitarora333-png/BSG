@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BSG Richmond District Tracker</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#eef2f7;color:#1a202c;min-height:100vh}
+#setup{display:flex;align-items:flex-start;justify-content:center;min-height:100vh;padding:24px 16px}
+.sw{background:#fff;border-radius:16px;padding:28px 26px;max-width:600px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,.1)}
+.slogo{font-size:36px;text-align:center;margin-bottom:6px}
+.stitle{font-size:19px;font-weight:800;text-align:center;color:#1a3a6b}
+.ssub{font-size:12px;text-align:center;color:#718096;margin:5px 0 6px;line-height:1.5}
+.notice{background:#ebf8ff;border:1.5px solid #90cdf4;border-radius:8px;padding:10px 13px;font-size:11.5px;color:#2b6cb0;margin:10px 0 18px;line-height:1.6}
+.notice strong{display:block;margin-bottom:3px}
+.code-box{background:#1e2533;color:#7ec8e3;font-family:'Courier New',monospace;font-size:10px;padding:10px 12px;border-radius:8px;max-height:180px;overflow-y:auto;margin:8px 0 6px;white-space:pre;line-height:1.5}
+.btn-copy{background:#e2e8f0;color:#2d3748;font-size:11px;padding:5px 12px;border:none;border-radius:6px;cursor:pointer;font-weight:700}
+.btn-copy:hover{background:#cbd5e0}
+.sep{border:none;border-top:2px solid #e8f0fe;margin:18px 0}
+.fg-url{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.fg-url label{font-size:11px;font-weight:700;color:#4a5568;text-transform:uppercase;letter-spacing:.5px}
+.fg-url input{padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:12px;font-family:monospace;width:100%}
+.fg-url input:focus{outline:none;border-color:#1a3a6b}
+.btn-conn{margin-top:10px;padding:11px 22px;background:#276749;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;width:100%}
+.btn-conn:hover{background:#22543d}
+#ss{margin-top:10px;font-size:12.5px;font-weight:700;text-align:center;min-height:16px}
+.ok{color:#276749}.er{color:#c53030}.ld{color:#2b6cb0}
+.diag{background:#fffbeb;border:1.5px solid #f6ad55;border-radius:8px;padding:11px 13px;margin-top:10px;font-size:11.5px;color:#744210;display:none;line-height:1.7}
+.diag a{color:#744210;font-weight:700;word-break:break-all}
+/* APP */
+.hdr{background:linear-gradient(135deg,#1a3a6b,#2a5298);color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center}
+.ht h1{font-size:17px;font-weight:800}.ht p{font-size:10px;opacity:.7;margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+.tabs{display:flex;background:#152f58}
+.tab{flex:1;padding:11px;color:rgba(255,255,255,.6);cursor:pointer;border-bottom:3px solid transparent;font-size:12.5px;font-weight:700;text-align:center;transition:.2s}
+.tab.active{color:#fff;border-bottom-color:#f6ad55}
+.ac{max-width:860px;margin:0 auto;padding:15px 12px}
+.card{background:#fff;border-radius:11px;padding:16px 18px;margin-bottom:14px;box-shadow:0 1px 5px rgba(0,0,0,.07)}
+.ct{font-size:13px;font-weight:800;color:#1a3a6b;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #e8f0fe}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.fg{display:flex;flex-direction:column;gap:4px}
+label{font-size:10px;font-weight:700;color:#4a5568;text-transform:uppercase;letter-spacing:.6px}
+select,input[type=text],input[type=date],input[type=number]{padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:7px;font-size:13px;color:#1a202c;width:100%;transition:.2s;background:#fff}
+select:focus,input:focus{outline:none;border-color:#2a5298}
+.dr{display:flex;gap:5px;align-items:center}.dr input{flex:1}
+.dr span{font-size:11px;color:#718096;font-weight:600;white-space:nowrap}
+.btn{padding:9px 18px;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:.2s}
+.bp{background:#1a3a6b;color:#fff;margin-top:12px}.bp:hover{background:#2a5298}
+.bg{background:#276749;color:#fff}.bg:hover{background:#22543d}
+.bgh{background:#e2e8f0;color:#4a5568;font-size:12px;padding:8px 14px}.bgh:hover{background:#cbd5e0}
+.bes{background:#3182ce;color:#fff;font-size:11px;padding:4px 10px;border-radius:5px;border:none;cursor:pointer}
+.bds{background:#c53030;color:#fff;font-size:11px;padding:4px 10px;border-radius:5px;margin-left:3px;border:none;cursor:pointer}
+.brs{background:rgba(255,255,255,.15);color:#fff;font-size:11px;padding:5px 11px;border-radius:6px;border:none;cursor:pointer}
+.sg{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:14px}
+.sc{background:linear-gradient(135deg,#1a3a6b,#2a5298);color:#fff;border-radius:10px;padding:14px;text-align:center}
+.sc .num{font-size:22px;font-weight:800}.sc .lbl{font-size:10px;opacity:.75;margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#f7fafc;color:#4a5568;font-weight:700;padding:8px 10px;text-align:left;border-bottom:2px solid #e2e8f0;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid #f0f4f8;color:#2d3748;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f7fafc}
+.b{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.bd{background:#ebf8ff;color:#2b6cb0}.bw{background:#faf5ff;color:#553c9a}
+.al{padding:10px 13px;border-radius:7px;margin-bottom:11px;font-size:12px;font-weight:600;display:none}
+.als{background:#f0fff4;color:#276749;border:1px solid #9ae6b4}
+.ale{background:#fff5f5;color:#c53030;border:1px solid #fed7d7}
+.fr{display:flex;gap:8px;margin-bottom:11px;flex-wrap:wrap}
+.fr select,.fr input{flex:1;min-width:120px;width:auto}
+.cw{display:flex;flex-wrap:wrap;gap:7px}
+.chip{display:flex;align-items:center;gap:6px;background:#f7fafc;border:1.5px solid #e2e8f0;border-radius:7px;padding:5px 10px}
+.chip span{font-size:12.5px;font-weight:600}.chip button{background:none;border:none;color:#c53030;cursor:pointer;font-size:16px;line-height:1}
+.ebn{background:#fffbeb;border:1.5px solid #f6ad55;border-radius:7px;padding:9px 12px;margin-bottom:11px;font-size:12px;font-weight:700;color:#744210;display:none}
+.em{text-align:center;padding:26px;color:#a0aec0;font-size:13px}
+.loader{display:none;position:fixed;inset:0;background:rgba(255,255,255,.75);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:10px;font-size:14px;font-weight:700;color:#1a3a6b}
+.spin{width:30px;height:30px;border:3px solid #e2e8f0;border-top-color:#1a3a6b;border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media(max-width:540px){.fg2{grid-template-columns:1fr}.sg{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="loader" id="loader"><div class="spin"></div>Syncing with Google Sheets…</div>
+
+<!-- SETUP -->
+<div id="setup">
+<div class="sw">
+  <div class="slogo">🙏</div>
+  <div class="stitle">BSG Richmond District Tracker</div>
+  <div class="ssub">Google Sheets backend · Works on any browser</div>
+
+  <div class="notice">
+    <strong>⚠️ Action needed — update your Apps Script</strong>
+    Replace your current Apps Script code with the updated version below, then create a <strong>new deployment</strong>. This version uses JSONP which works reliably from any browser.
+  </div>
+
+  <strong style="font-size:12px;font-weight:700;color:#1a202c">Step 1 — Replace Apps Script code with this:</strong>
+  <div class="code-box" id="gas-code"></div>
+  <button class="btn-copy" id="copybtn" onclick="copyCode()">📋 Copy Updated Code</button>
+
+  <div style="font-size:12px;color:#4a5568;margin-top:10px;line-height:1.7">
+    <strong>Step 2</strong> — In Apps Script: <strong>Deploy → Manage deployments → ✏️ Edit → Version: New version → Deploy</strong><br>
+    <strong>Step 3</strong> — Copy the updated <strong>/exec</strong> URL and paste below
+  </div>
+
+  <hr class="sep">
+
+  <div class="fg-url">
+    <label>Web App URL (/exec)</label>
+    <input type="text" id="url-in" placeholder="https://script.google.com/macros/s/…/exec"
+      onkeydown="if(event.key==='Enter')connect()">
+  </div>
+  <button class="btn-conn" onclick="connect()">Connect →</button>
+  <div id="ss"></div>
+  <div class="diag" id="diag"></div>
+</div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+  <div class="hdr">
+    <div class="ht"><h1>🙏 BSG Richmond District</h1><p>Daimoku · Home Visit · Dialogue</p></div>
+    <div style="display:flex;gap:6px">
+      <button class="brs" onclick="loadAll()">🔄 Refresh</button>
+      <button class="brs" onclick="resetSetup()">⚙ Change</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('member')">📝 Member Entry</div>
+    <div class="tab" onclick="switchTab('admin')">📊 Admin &amp; Summary</div>
+  </div>
+  <div class="ac">
+    <div id="tm">
+      <div id="ma" class="al"></div>
+      <div class="card">
+        <div class="ct">📝 Submit Your Activity</div>
+        <div class="fg2">
+          <div class="fg"><label>Your Name</label>
+            <select id="mm" onchange="onMC()"><option value="">— Select Your Name —</option></select></div>
+          <div class="fg"><label>Period</label>
+            <select id="mpt" onchange="updateDL()"><option value="daily">Daily</option><option value="weekly">Weekly (Starting)</option></select></div>
+          <div class="fg"><label id="mdl">Date</label><input type="date" id="md"></div>
+          <div class="fg"><label>Daimoku</label>
+            <div class="dr"><input type="number" id="mdh" placeholder="0" min="0" max="99"><span>hrs</span>
+            <input type="number" id="mdm" placeholder="0" min="0" max="59"><span>mins</span></div></div>
+          <div class="fg"><label>Home Visits</label><input type="number" id="mhv" placeholder="0" min="0"></div>
+          <div class="fg"><label>Dialogues</label><input type="number" id="mdial" placeholder="0" min="0"></div>
+        </div>
+        <button class="btn bp" onclick="submitMember()">✓ Submit Entry</button>
+      </div>
+      <div class="card" id="mh" style="display:none">
+        <div class="ct">📅 My Recent Entries</div>
+        <div class="tw"><table>
+          <thead><tr><th>Period</th><th>Date</th><th>Daimoku</th><th>Home Visits</th><th>Dialogues</th></tr></thead>
+          <tbody id="mhb"></tbody>
+        </table></div>
+      </div>
+    </div>
+    <div id="ta" style="display:none">
+      <div id="aa" class="al"></div>
+      <div class="sg" id="sg"></div>
+      <div class="card">
+        <div class="ct">📊 Member Summary</div>
+        <div class="fr">
+          <select id="fp" onchange="renderSummary()">
+            <option value="all">All Time</option><option value="month">This Month</option><option value="week">This Week</option>
+          </select>
+        </div>
+        <div class="tw"><table>
+          <thead><tr><th>Member</th><th>Daimoku</th><th>Home Visits</th><th>Dialogues</th><th>Entries</th></tr></thead>
+          <tbody id="sb"></tbody>
+        </table></div>
+      </div>
+      <div class="card">
+        <div class="ct">🗂 All Entries</div>
+        <div class="fr">
+          <select id="fm" onchange="renderEntries()"><option value="">All Members</option></select>
+          <input type="date" id="ff" onchange="renderEntries()">
+          <input type="date" id="ft" onchange="renderEntries()">
+        </div>
+        <div class="tw"><table>
+          <thead><tr><th>Member</th><th>Type</th><th>Date</th><th>Daimoku</th><th>HV</th><th>Dialogues</th><th>Actions</th></tr></thead>
+          <tbody id="eb"></tbody>
+        </table></div>
+      </div>
+      <div class="card">
+        <div class="ct">➕ Add / Edit Entry (Admin)</div>
+        <div class="ebn" id="editbanner">✏️ Editing — update fields and click Save.</div>
+        <input type="hidden" id="eid">
+        <div class="fg2">
+          <div class="fg"><label>Member</label><select id="am"><option value="">— Select —</option></select></div>
+          <div class="fg"><label>Period</label><select id="apt"><option value="daily">Daily</option><option value="weekly">Weekly</option></select></div>
+          <div class="fg"><label>Date</label><input type="date" id="ad"></div>
+          <div class="fg"><label>Daimoku</label>
+            <div class="dr"><input type="number" id="adh" placeholder="0" min="0"><span>hrs</span>
+            <input type="number" id="adm" placeholder="0" min="0" max="59"><span>mins</span></div></div>
+          <div class="fg"><label>Home Visits</label><input type="number" id="ahv" placeholder="0" min="0"></div>
+          <div class="fg"><label>Dialogues</label><input type="number" id="adial" placeholder="0" min="0"></div>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn bg" style="margin-top:0" onclick="saveAdmin()">💾 Save Entry</button>
+          <button class="btn bgh" onclick="clearAdmin()">Clear</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">👥 Manage Members</div>
+        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+          <input type="text" id="nm" placeholder="Member name…" style="flex:1;min-width:160px" onkeydown="if(event.key==='Enter')addMember()">
+          <button class="btn bg" style="margin-top:0;padding:9px 15px;font-size:13px" onclick="addMember()">+ Add</button>
+        </div>
+        <div id="ml"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== UPDATED APPS SCRIPT CODE (supports JSONP) =====
+const GAS = `function doGet(e) {
+  if (!e || !e.parameter) {
+    return ContentService.createTextOutput('{}')
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  const result = processRequest(e);
+  const cb = e.parameter.callback;
+  if (cb) {
+    return ContentService.createTextOutput(cb + '(' + JSON.stringify(result) + ')')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+  return ContentService.createTextOutput(JSON.stringify(result))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function processRequest(e) {
+  const a = e.parameter.action;
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  try {
+    if (a === 'getAll') {
+      const ms = ss.getSheetByName('Members');
+      const lr = ms.getLastRow();
+      const members = lr > 1
+        ? ms.getRange(2,1,lr-1,1).getValues().map(r=>r[0]).filter(Boolean) : [];
+      const es = ss.getSheetByName('Entries');
+      const entries = [];
+      if (es.getLastRow() > 1) {
+        es.getRange(2,1,es.getLastRow()-1,9).getValues().forEach(r => {
+          if (r[0]) entries.push({id:r[0],member:r[1],ptype:r[2],
+            date:r[3],dh:+r[4],dm:+r[5],hv:+r[6],dial:+r[7],ts:r[8]});
+        });
+      }
+      return {members, entries};
+    }
+    if (a === 'addMember') {
+      ss.getSheetByName('Members').appendRow([e.parameter.name]);
+      return {success:true};
+    }
+    if (a === 'removeMember') {
+      const s = ss.getSheetByName('Members');
+      const d = s.getDataRange().getValues();
+      for (let i=1;i<d.length;i++) {
+        if (d[i][0]===e.parameter.name) { s.deleteRow(i+1); break; }
+      }
+      return {success:true};
+    }
+    if (a === 'addEntry') {
+      const d = JSON.parse(e.parameter.data);
+      ss.getSheetByName('Entries').appendRow(
+        [d.id,d.member,d.ptype,d.date,d.dh,d.dm,d.hv,d.dial,d.ts]);
+      return {success:true};
+    }
+    if (a === 'updateEntry') {
+      const d = JSON.parse(e.parameter.data);
+      const s = ss.getSheetByName('Entries');
+      const v = s.getDataRange().getValues();
+      for (let i=1;i<v.length;i++) {
+        if (v[i][0]===d.id) {
+          s.getRange(i+1,1,1,9).setValues(
+            [[d.id,d.member,d.ptype,d.date,d.dh,d.dm,d.hv,d.dial,d.ts]]);
+          break;
+        }
+      }
+      return {success:true};
+    }
+    if (a === 'deleteEntry') {
+      const s = ss.getSheetByName('Entries');
+      const v = s.getDataRange().getValues();
+      for (let i=1;i<v.length;i++) {
+        if (v[i][0]===e.parameter.id) { s.deleteRow(i+1); break; }
+      }
+      return {success:true};
+    }
+    return {error:'Unknown action: '+a};
+  } catch(err) { return {error: err.toString()}; }
+}
+
+function ok(d) {
+  return ContentService.createTextOutput(JSON.stringify(d))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function setup() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss.getSheetByName('Members')) {
+    const s = ss.insertSheet('Members');
+    s.getRange(1,1).setValue('Name'); s.setFrozenRows(1);
+  }
+  if (!ss.getSheetByName('Entries')) {
+    const s = ss.insertSheet('Entries');
+    s.getRange(1,1,1,9).setValues([['ID','Member','PType','Date','DH','DM','HV','Dial','Timestamp']]);
+    s.setFrozenRows(1);
+  }
+  SpreadsheetApp.getUi().alert('Setup complete!');
+}`;
+
+document.getElementById('gas-code').textContent = GAS;
+
+// ===== STATE =====
+let URL_='', members=[], entries=[];
+function saveURL(u){ localStorage.setItem('bsg_url',u); }
+function loadURL(){ return localStorage.getItem('bsg_url'); }
+
+// ===== JSONP API (bypasses CORS entirely) =====
+function api(params) {
+  return new Promise((resolve, reject) => {
+    const cbName = 'bsgcb' + Date.now();
+    const script = document.createElement('script');
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error('Timed out after 15s. Check your internet and URL.'));
+    }, 15000);
+    function cleanup() {
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      clearTimeout(timer);
+    }
+    window[cbName] = function(data) { cleanup(); resolve(data); };
+    script.onerror = function() { cleanup(); reject(new Error('Failed to load. Check the URL and deployment settings.')); };
+    params.callback = cbName;
+    script.src = URL_ + '?' + new URLSearchParams(params).toString();
+    document.head.appendChild(script);
+  });
+}
+
+// ===== LOAD ALL =====
+async function loadAll() {
+  showLoader(true);
+  try {
+    const r = await api({action:'getAll'});
+    if (!r || r.error) throw new Error(r ? r.error : 'Empty response');
+    members = r.members||[]; entries = r.entries||[];
+    populateDDs(); renderAdmin(); renderMyHist(gv('mm'));
+    // Show connected URL for verification
+    document.getElementById('conn-url').textContent = URL_.slice(0,60)+'…';
+  } catch(err) { alert2('ma','⚠ Load failed: '+err.message,'e'); }
+  showLoader(false);
+}
+
+window.onload = function() {
+  const u = loadURL();
+  if (u) { URL_=u; showApp(); loadAll(); }
+};
+
+// ===== CONNECT =====
+async function connect() {
+  const raw = document.getElementById('url-in').value.trim();
+  document.getElementById('diag').style.display='none';
+  if (!raw) return setSS('Please paste your Web App URL.','er');
+  if (!raw.endsWith('/exec')) return showDiag('URL must end in <strong>/exec</strong>. Go to Apps Script → Deploy → Manage deployments and copy the /exec URL.');
+  setSS('🔄 Connecting…','ld');
+  URL_ = raw;
+  try {
+    const r = await api({action:'getAll'});
+    if (r.error) throw new Error(r.error);
+    saveURL(raw);
+    members = r.members||[]; entries = r.entries||[];
+    setSS('✓ Connected!','ok');
+    setTimeout(()=>{ showApp(); populateDDs(); renderAdmin(); setToday(); }, 500);
+  } catch(err) {
+    setSS('','');
+    showDiag(`<strong>Error:</strong> ${err.message}<br><br>
+    Make sure you:<br>
+    · Updated the Apps Script with the new code above<br>
+    · Created a <strong>new version</strong> in Manage deployments<br>
+    · Set <em>Who has access</em> to <strong>Anyone</strong><br>
+    · Are using the <strong>/exec</strong> URL from the new deployment`);
+  }
+}
+
+function setSS(msg,cls){const el=document.getElementById('ss');el.textContent=msg;el.className=cls;}
+function showDiag(html){const d=document.getElementById('diag');d.innerHTML=html;d.style.display='';}
+function showApp(){document.getElementById('setup').style.display='none';document.getElementById('app').style.display='';setToday();}
+function resetSetup(){localStorage.removeItem('bsg_url');location.reload();}
+function copyCode(){navigator.clipboard.writeText(GAS).then(()=>{const b=document.getElementById('copybtn');b.textContent='✓ Copied!';setTimeout(()=>b.textContent='📋 Copy Updated Code',2500);}).catch(()=>alert('Please manually select and copy the code above.'));}
+
+// ===== TABS =====
+function switchTab(t){
+  document.getElementById('tm').style.display=t==='member'?'':'none';
+  document.getElementById('ta').style.display=t==='admin'?'':'none';
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',(t==='member'&&i===0)||(t==='admin'&&i===1)));
+  if(t==='admin')renderAdmin();
+}
+
+function populateDDs(){
+  ['mm','am','fm'].forEach(id=>{
+    const el=document.getElementById(id),cur=el.value,isF=id==='fm';
+    el.innerHTML=isF?'<option value="">All Members</option>':'<option value="">— Select —</option>';
+    members.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;el.appendChild(o);});
+    if(cur)el.value=cur;
+  });
+}
+function setToday(){const t=new Date().toISOString().split('T')[0];['md','ad'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=t;});}
+function updateDL(){document.getElementById('mdl').textContent=gv('mpt')==='weekly'?'Week Starting':'Date';}
+function onMC(){renderMyHist(gv('mm'));}
+
+// ===== MEMBER =====
+async function submitMember(){
+  const mem=gv('mm'),pt=gv('mpt'),dt=gv('md'),dh=gn('mdh'),dm=gn('mdm'),hv=gn('mhv'),dial=gn('mdial');
+  if(!mem)return alert2('ma','Please select your name.','e');
+  if(!dt)return alert2('ma','Please select a date.','e');
+  if(!dh&&!dm&&!hv&&!dial)return alert2('ma','Please enter at least one value.','e');
+  showLoader(true);
+  try{
+    const d={id:uid(),member:mem,ptype:pt,date:dt,dh,dm,hv,dial,ts:Date.now()};
+    const r = await api({action:'addEntry',data:JSON.stringify(d)});
+    if(!r || r.error) throw new Error(r ? r.error : 'No response from sheet');
+    entries.push(d);
+    alert2('ma','✓ Entry submitted and saved to Google Sheet!','s');
+    ['mdh','mdm','mhv','mdial'].forEach(x=>document.getElementById(x).value='');
+    renderMyHist(mem);
+  }catch(err){alert2('ma','✗ Save failed: '+err.message,'e');}
+  showLoader(false);
+}
+function renderMyHist(mem){
+  if(!mem){document.getElementById('mh').style.display='none';return;}
+  const data=entries.filter(e=>e.member===mem).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10);
+  document.getElementById('mh').style.display=data.length?'':'none';
+  document.getElementById('mhb').innerHTML=data.map(e=>`<tr>
+    <td><span class="b ${e.ptype==='weekly'?'bw':'bd'}">${e.ptype==='weekly'?'Weekly':'Daily'}</span></td>
+    <td>${fd(e.date)}</td><td>${e.dh}h ${e.dm}m</td><td>${e.hv}</td><td>${e.dial}</td>
+  </tr>`).join('')||'<tr><td colspan="5" class="em">No entries yet</td></tr>';
+}
+
+// ===== ADMIN =====
+function renderAdmin(){renderStats();renderSummary();renderEntries();renderML();}
+function pfilt(arr){
+  const p=gv('fp')||'all',now=new Date();
+  return arr.filter(e=>{
+    if(p==='month'){const d=new Date(e.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}
+    if(p==='week'){const d=new Date(e.date),ws=new Date(now);ws.setDate(now.getDate()-now.getDay());return d>=ws;}
+    return true;
+  });
+}
+function renderStats(){
+  const td=entries.reduce((s,e)=>s+e.dh*60+e.dm,0);
+  document.getElementById('sg').innerHTML=`
+    <div class="sc"><div class="num">${Math.floor(td/60)}h ${td%60}m</div><div class="lbl">Total Daimoku</div></div>
+    <div class="sc"><div class="num">${entries.reduce((s,e)=>s+e.hv,0)}</div><div class="lbl">Total Home Visits</div></div>
+    <div class="sc"><div class="num">${entries.reduce((s,e)=>s+e.dial,0)}</div><div class="lbl">Total Dialogues</div></div>`;
+}
+function renderSummary(){
+  const data=pfilt(entries),map={};
+  members.forEach(m=>map[m]={d:0,hv:0,dial:0,cnt:0});
+  data.forEach(e=>{
+    if(!map[e.member])map[e.member]={d:0,hv:0,dial:0,cnt:0};
+    map[e.member].d+=e.dh*60+e.dm;map[e.member].hv+=e.hv;map[e.member].dial+=e.dial;map[e.member].cnt++;
+  });
+  document.getElementById('sb').innerHTML=Object.entries(map).map(([nm,d])=>`<tr>
+    <td><strong>${nm}</strong></td><td>${Math.floor(d.d/60)}h ${d.d%60}m</td>
+    <td>${d.hv}</td><td>${d.dial}</td><td><span class="b bd">${d.cnt}</span></td>
+  </tr>`).join('')||'<tr><td colspan="5" class="em">No data</td></tr>';
+}
+function renderEntries(){
+  const fm=gv('fm'),ff=gv('ff'),ft=gv('ft');
+  const data=entries.filter(e=>(!fm||e.member===fm)&&(!ff||e.date>=ff)&&(!ft||e.date<=ft)).sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('eb').innerHTML=data.length?data.map(e=>`<tr>
+    <td><strong>${e.member}</strong></td>
+    <td><span class="b ${e.ptype==='weekly'?'bw':'bd'}">${e.ptype==='weekly'?'Weekly':'Daily'}</span></td>
+    <td>${fd(e.date)}</td><td>${e.dh}h ${e.dm}m</td><td>${e.hv}</td><td>${e.dial}</td>
+    <td style="white-space:nowrap">
+      <button class="bes" onclick="editEntry('${e.id}')">Edit</button>
+      <button class="bds" onclick="delEntry('${e.id}')">Del</button>
+    </td>
+  </tr>`).join(''):'<tr><td colspan="7" class="em">No entries</td></tr>';
+}
+function renderML(){
+  document.getElementById('ml').innerHTML=members.length
+    ?'<div class="cw">'+members.map(m=>`<div class="chip"><span>${m}</span><button onclick="removeMember(${JSON.stringify(m)})">×</button></div>`).join('')+'</div>'
+    :'<p style="color:#a0aec0;font-size:13px">No members yet.</p>';
+}
+
+async function addMember(){
+  const nm=document.getElementById('nm').value.trim();
+  if(!nm)return;
+  if(members.includes(nm))return alert2('aa','Already exists.','e');
+  showLoader(true);
+  try{
+    const r=await api({action:'addMember',name:nm});
+    if(!r||r.error) throw new Error(r?r.error:'No response');
+    members.push(nm);document.getElementById('nm').value='';populateDDs();renderML();
+    alert2('aa','✓ Added and saved to sheet.','s');
+  }
+  catch(err){alert2('aa','✗ '+err.message,'e');}
+  showLoader(false);
+}
+async function removeMember(nm){
+  if(!confirm(`Remove "${nm}"?`))return;
+  showLoader(true);
+  try{await api({action:'removeMember',name:nm});members=members.filter(m=>m!==nm);populateDDs();renderML();}
+  catch(err){alert2('aa','✗ '+err.message,'e');}
+  showLoader(false);
+}
+async function saveAdmin(){
+  const eid=gv('eid'),mem=gv('am'),pt=gv('apt'),dt=gv('ad'),dh=gn('adh'),dm=gn('adm'),hv=gn('ahv'),dial=gn('adial');
+  if(!mem)return alert2('aa','Select a member.','e');
+  if(!dt)return alert2('aa','Select a date.','e');
+  showLoader(true);
+  try{
+    if(eid){
+      const d={id:eid,member:mem,ptype:pt,date:dt,dh,dm,hv,dial,ts:Date.now()};
+      await api({action:'updateEntry',data:JSON.stringify(d)});
+      const i=entries.findIndex(e=>e.id===eid);if(i>-1)entries[i]=d;
+    }else{
+      const d={id:uid(),member:mem,ptype:pt,date:dt,dh,dm,hv,dial,ts:Date.now()};
+      await api({action:'addEntry',data:JSON.stringify(d)});entries.push(d);
+    }
+    clearAdmin();renderAdmin();alert2('aa',`✓ ${eid?'Updated':'Saved'}!`,'s');
+  }catch(err){alert2('aa','✗ '+err.message,'e');}
+  showLoader(false);
+}
+function editEntry(id){
+  const e=entries.find(x=>x.id===id);if(!e)return;
+  document.getElementById('eid').value=e.id;
+  document.getElementById('am').value=e.member;
+  document.getElementById('apt').value=e.ptype||'daily';
+  document.getElementById('ad').value=e.date;
+  document.getElementById('adh').value=e.dh;
+  document.getElementById('adm').value=e.dm;
+  document.getElementById('ahv').value=e.hv;
+  document.getElementById('adial').value=e.dial;
+  document.getElementById('editbanner').style.display='';
+  document.getElementById('am').scrollIntoView({behavior:'smooth',block:'center'});
+}
+async function delEntry(id){
+  if(!confirm('Delete this entry?'))return;
+  showLoader(true);
+  try{await api({action:'deleteEntry',id});entries=entries.filter(e=>e.id!==id);renderAdmin();alert2('aa','Deleted.','s');}
+  catch(err){alert2('aa','✗ '+err.message,'e');}
+  showLoader(false);
+}
+function clearAdmin(){
+  ['eid','am','adh','adm','ahv','adial'].forEach(x=>document.getElementById(x).value='');
+  document.getElementById('apt').value='daily';
+  document.getElementById('editbanner').style.display='none';
+  setToday();
+}
+function gv(id){return(document.getElementById(id)||{}).value?.trim()||''}
+function gn(id){return parseInt(document.getElementById(id)?.value)||0}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function fd(d){if(!d)return'';const[y,m,dd]=d.split('-');return`${dd} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]} ${y}`}
+function alert2(id,msg,t){const el=document.getElementById(id);el.className=`al al${t}`;el.textContent=msg;el.style.display='';clearTimeout(el._t);el._t=setTimeout(()=>el.style.display='none',4500);}
+function showLoader(show){document.getElementById('loader').style.display=show?'flex':'none'}
+</script>
+</body>
+</html>
