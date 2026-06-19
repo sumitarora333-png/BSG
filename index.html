@@ -40,6 +40,7 @@ tr:last-child td{border-bottom:none}
 tr:hover td{background:#f7fafc}
 .b{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
 .bd{background:#ebf8ff;color:#2b6cb0}.bw{background:#faf5ff;color:#553c9a}
+.bgrp{background:#f0fff4;color:#276749}
 .al{padding:10px 13px;border-radius:7px;margin-bottom:11px;font-size:12px;font-weight:600;display:none}
 .als{background:#f0fff4;color:#276749;border:1px solid #9ae6b4}
 .ale{background:#fff5f5;color:#c53030;border:1px solid #fed7d7}
@@ -50,6 +51,14 @@ tr:hover td{background:#f7fafc}
 .chip span{font-size:12.5px;font-weight:600}.chip button{background:none;border:none;color:#c53030;cursor:pointer;font-size:16px;line-height:1}
 .ebn{background:#fffbeb;border:1.5px solid #f6ad55;border-radius:7px;padding:9px 12px;margin-bottom:11px;font-size:12px;font-weight:700;color:#744210;display:none}
 .em{text-align:center;padding:26px;color:#a0aec0;font-size:13px}
+/* TARGET CHART */
+.tcrow{margin-bottom:15px}
+.tcrow:last-child{margin-bottom:0}
+.tclabel{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;font-weight:700;color:#2d3748;margin-bottom:6px}
+.tclabel .pct{font-size:11px;font-weight:800;padding:2px 8px;border-radius:20px}
+.tcbar-bg{background:#edf2f7;border-radius:8px;height:15px;overflow:hidden}
+.tcbar-fill{height:100%;border-radius:8px;transition:width .6s ease}
+.tcsub{font-size:10.5px;color:#a0aec0;margin-top:4px;font-weight:600}
 /* PIN MODAL */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:900;align-items:center;justify-content:center}
 .modal{background:#fff;border-radius:14px;padding:28px 26px;max-width:320px;width:90%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.2)}
@@ -84,7 +93,6 @@ tr:hover td{background:#f7fafc}
   </div>
 </div>
 
-<!-- APP -->
 <div class="hdr">
   <div class="ht"><h1>🙏 BSG Richmond District</h1><p>Daimoku · Home Visit · Dialogue</p></div>
 </div>
@@ -97,6 +105,11 @@ tr:hover td{background:#f7fafc}
 
   <!-- MEMBER TAB -->
   <div id="tm">
+    <div class="card">
+      <div class="ct">🎯 District Target vs Completion</div>
+      <div id="tc-member"></div>
+    </div>
+
     <div id="ma" class="al"></div>
     <div class="card">
       <div class="ct">📝 Submit Your Activity</div>
@@ -125,6 +138,11 @@ tr:hover td{background:#f7fafc}
 
   <!-- ADMIN TAB -->
   <div id="ta" style="display:none">
+    <div class="card">
+      <div class="ct">🎯 District Target vs Completion</div>
+      <div id="tc-admin"></div>
+    </div>
+
     <div id="aa" class="al"></div>
     <div class="sg" id="sg"></div>
     <div class="card">
@@ -136,7 +154,7 @@ tr:hover td{background:#f7fafc}
         <button class="btn" style="background:#e2e8f0;color:#4a5568;font-size:12px;padding:8px 14px;margin-top:0" onclick="loadAll()">🔄 Refresh</button>
       </div>
       <div class="tw"><table>
-        <thead><tr><th>Member</th><th>Daimoku</th><th>Home Visits</th><th>Dialogues</th><th>Entries</th></tr></thead>
+        <thead><tr><th>Member</th><th>Group</th><th>Daimoku</th><th>Home Visits</th><th>Dialogues</th><th>Entries</th></tr></thead>
         <tbody id="sb"></tbody>
       </table></div>
     </div>
@@ -173,10 +191,18 @@ tr:hover td{background:#f7fafc}
     </div>
     <div class="card">
       <div class="ct">👥 Manage Members</div>
-      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-        <input type="text" id="nm" placeholder="Member name…" style="flex:1;min-width:160px" onkeydown="if(event.key==='Enter')addMember()">
-        <button class="btn bg" style="margin-top:0;padding:9px 15px;font-size:13px" onclick="addMember()">+ Add</button>
+      <div class="fg2" style="margin-bottom:12px">
+        <div class="fg"><label>Member Name</label>
+          <input type="text" id="nm" placeholder="Member name…" onkeydown="if(event.key==='Enter')addMember()"></div>
+        <div class="fg"><label>Group</label>
+          <select id="ngrp">
+            <option value="WD">WD</option>
+            <option value="YWD">YWD</option>
+            <option value="MD">MD</option>
+            <option value="YMD">YMD</option>
+          </select></div>
       </div>
+      <button class="btn bg" style="margin-top:0;padding:9px 15px;font-size:13px;margin-bottom:14px" onclick="addMember()">+ Add Member</button>
       <div id="ml"></div>
       <div style="margin-top:18px;padding-top:14px;border-top:1px solid #e2e8f0">
         <p style="font-size:11px;color:#a0aec0;margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.4px">Admin Settings</p>
@@ -188,10 +214,18 @@ tr:hover td{background:#f7fafc}
 
 <script>
 // ============================================================
-//  ⚙️  CONFIGURATION — edit these two values
+//  ⚙️  CONFIGURATION
 // ============================================================
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxW3CNJ2cltW_tLKsIogJ3-K1y-qYdol6hwvSBVJ4Pc_W3yZxkfr_dMh3ucPn-qJLCD/exec';
-const ADMIN_PIN  = '1234';   // change this to your preferred PIN
+const ADMIN_PIN  = '1234';
+
+// Targets
+const TARGET_DAIMOKU = 3000000;   // count
+const TARGET_HV      = 75;
+const TARGET_DIAL     = 100;
+const DAIMOKU_MIN_TO_COUNT = 40;  // 1 minute = 40 count
+
+const GROUPS = ['WD','YWD','MD','YMD'];
 // ============================================================
 
 let members=[], entries=[], adminUnlocked=false;
@@ -218,7 +252,7 @@ async function loadAll() {
     const r = await api({action:'getAll'});
     if (!r || r.error) throw new Error(r ? r.error : 'Empty response');
     members = r.members||[]; entries = r.entries||[];
-    populateDDs(); renderAdmin(); renderMyHist(gv('mm'));
+    populateDDs(); renderAdmin(); renderMyHist(gv('mm')); renderTargetChart();
   } catch(err) { alert2('ma','⚠ '+err.message,'e'); }
   showLoader(false);
 }
@@ -227,6 +261,40 @@ window.onload = function() {
   setToday();
   loadAll();
 };
+
+// ===== TARGET VS COMPLETION CHART =====
+function renderTargetChart() {
+  const totalMin = entries.reduce((s,e)=>s + e.dh*60 + e.dm, 0);
+  const daimokuCount = totalMin * DAIMOKU_MIN_TO_COUNT;
+  const hvTotal = entries.reduce((s,e)=>s + e.hv, 0);
+  const dialTotal = entries.reduce((s,e)=>s + e.dial, 0);
+
+  const rows = [
+    { label:'Daimoku', val:daimokuCount, target:TARGET_DAIMOKU, color:'linear-gradient(90deg,#1a3a6b,#2a5298)', sub: totalMin.toLocaleString()+' total minutes logged' },
+    { label:'Home Visits', val:hvTotal, target:TARGET_HV, color:'linear-gradient(90deg,#276749,#38a169)' },
+    { label:'Dialogues', val:dialTotal, target:TARGET_DIAL, color:'linear-gradient(90deg,#c05621,#ed8936)' }
+  ];
+
+  const html = rows.map(r=>{
+    const pct = r.target>0 ? Math.min(100,(r.val/r.target)*100) : 0;
+    const pctDisp = pct.toFixed(1);
+    const pctColor = pct>=100 ? '#276749' : pct>=50 ? '#c05621' : '#c53030';
+    const pctBg = pct>=100 ? '#f0fff4' : pct>=50 ? '#fffaf0' : '#fff5f5';
+    return `<div class="tcrow">
+      <div class="tclabel">
+        <span>${r.label}: ${r.val.toLocaleString()} / ${r.target.toLocaleString()}</span>
+        <span class="pct" style="color:${pctColor};background:${pctBg}">${pctDisp}%</span>
+      </div>
+      <div class="tcbar-bg"><div class="tcbar-fill" style="width:${pct}%;background:${r.color}"></div></div>
+      ${r.sub ? `<div class="tcsub">${r.sub}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  ['tc-member','tc-admin'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.innerHTML = html;
+  });
+}
 
 // ===== PIN / ADMIN =====
 function requestAdmin() {
@@ -273,13 +341,20 @@ function populateDDs(){
   ['mm','am','fm'].forEach(id=>{
     const el=document.getElementById(id),cur=el.value,isF=id==='fm';
     el.innerHTML=isF?'<option value="">All Members</option>':'<option value="">— Select —</option>';
-    members.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;el.appendChild(o);});
+    members.forEach(m=>{
+      const o=document.createElement('option');
+      o.value=m.name;
+      o.textContent=m.group ? `${m.name} (${m.group})` : m.name;
+      el.appendChild(o);
+    });
     if(cur)el.value=cur;
   });
 }
 function setToday(){const t=new Date().toISOString().split('T')[0];['md','ad'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=t;});}
 function updateDL(){document.getElementById('mdl').textContent=gv('mpt')==='weekly'?'Week Starting':'Date';}
 function onMC(){renderMyHist(gv('mm'));}
+
+function memberGroup(name){ const m=members.find(x=>x.name===name); return m?m.group:''; }
 
 // ===== MEMBER SUBMIT =====
 async function submitMember(){
@@ -296,6 +371,7 @@ async function submitMember(){
     alert2('ma','✓ Entry saved successfully!','s');
     ['mdh','mdm','mhv','mdial'].forEach(x=>document.getElementById(x).value='');
     renderMyHist(mem);
+    renderTargetChart();
   }catch(err){alert2('ma','✗ '+err.message,'e');}
   showLoader(false);
 }
@@ -311,7 +387,7 @@ function renderMyHist(mem){
 }
 
 // ===== ADMIN RENDER =====
-function renderAdmin(){renderStats();renderSummary();renderEntries();renderML();}
+function renderAdmin(){renderStats();renderSummary();renderEntries();renderML();renderTargetChart();}
 function pfilt(arr){
   const p=gv('fp')||'all',now=new Date();
   return arr.filter(e=>{
@@ -323,21 +399,23 @@ function pfilt(arr){
 function renderStats(){
   const td=entries.reduce((s,e)=>s+e.dh*60+e.dm,0);
   document.getElementById('sg').innerHTML=`
-    <div class="sc"><div class="num">${Math.floor(td/60)}h ${td%60}m</div><div class="lbl">Total Daimoku</div></div>
+    <div class="sc"><div class="num">${Math.floor(td/60)}h ${td%60}m</div><div class="lbl">Total Daimoku Time</div></div>
     <div class="sc"><div class="num">${entries.reduce((s,e)=>s+e.hv,0)}</div><div class="lbl">Total Home Visits</div></div>
     <div class="sc"><div class="num">${entries.reduce((s,e)=>s+e.dial,0)}</div><div class="lbl">Total Dialogues</div></div>`;
 }
 function renderSummary(){
   const data=pfilt(entries),map={};
-  members.forEach(m=>map[m]={d:0,hv:0,dial:0,cnt:0});
+  members.forEach(m=>map[m.name]={d:0,hv:0,dial:0,cnt:0,group:m.group});
   data.forEach(e=>{
-    if(!map[e.member])map[e.member]={d:0,hv:0,dial:0,cnt:0};
+    if(!map[e.member])map[e.member]={d:0,hv:0,dial:0,cnt:0,group:memberGroup(e.member)};
     map[e.member].d+=e.dh*60+e.dm;map[e.member].hv+=e.hv;map[e.member].dial+=e.dial;map[e.member].cnt++;
   });
   document.getElementById('sb').innerHTML=Object.entries(map).map(([nm,d])=>`<tr>
-    <td><strong>${nm}</strong></td><td>${Math.floor(d.d/60)}h ${d.d%60}m</td>
+    <td><strong>${nm}</strong></td>
+    <td>${d.group?`<span class="b bgrp">${d.group}</span>`:''}</td>
+    <td>${Math.floor(d.d/60)}h ${d.d%60}m</td>
     <td>${d.hv}</td><td>${d.dial}</td><td><span class="b bd">${d.cnt}</span></td>
-  </tr>`).join('')||'<tr><td colspan="5" class="em">No data</td></tr>';
+  </tr>`).join('')||'<tr><td colspan="6" class="em">No data</td></tr>';
 }
 function renderEntries(){
   const fm=gv('fm'),ff=gv('ff'),ft=gv('ft');
@@ -354,24 +432,25 @@ function renderEntries(){
 }
 function renderML(){
   document.getElementById('ml').innerHTML=members.length
-    ?'<div class="cw">'+members.map(m=>`<div class="chip"><span>${m}</span><button onclick="removeMember(${JSON.stringify(m)})">×</button></div>`).join('')+'</div>'
+    ?'<div class="cw">'+members.map(m=>`<div class="chip"><span>${m.name}</span>${m.group?`<span class="b bgrp">${m.group}</span>`:''}<button onclick="removeMember(${JSON.stringify(m.name)})">×</button></div>`).join('')+'</div>'
     :'<p style="color:#a0aec0;font-size:13px">No members yet.</p>';
 }
 
 // ===== MEMBERS CRUD =====
 async function addMember(){
   const nm=document.getElementById('nm').value.trim();
+  const grp=document.getElementById('ngrp').value;
   if(!nm){ alert('Please type a member name first.'); return; }
-  if(members.includes(nm)){ alert('"'+nm+'" already exists in the list.'); return; }
+  if(members.some(m=>m.name===nm)){ alert('"'+nm+'" already exists in the list.'); return; }
   showLoader(true);
   try{
-    const r=await api({action:'addMember',name:nm});
+    const r=await api({action:'addMember',name:nm,group:grp});
     if(!r||r.error)throw new Error(r?r.error:'No response from sheet');
-    members.push(nm);
+    members.push({name:nm,group:grp});
     document.getElementById('nm').value='';
     populateDDs();
     renderML();
-    alert2('aa','✓ "'+nm+'" added successfully!','s');
+    alert2('aa','✓ "'+nm+'" added as '+grp+'!','s');
   }catch(err){
     showLoader(false);
     alert('❌ Failed to add member: '+err.message);
@@ -384,7 +463,7 @@ async function removeMember(nm){
   try{
     const r=await api({action:'removeMember',name:nm});
     if(!r||r.error)throw new Error(r?r.error:'No response');
-    members=members.filter(m=>m!==nm);populateDDs();renderML();
+    members=members.filter(m=>m.name!==nm);populateDDs();renderML();
   }catch(err){alert2('aa','✗ '+err.message,'e');}
   showLoader(false);
 }
