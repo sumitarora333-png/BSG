@@ -148,7 +148,7 @@ tr:hover td{background:#f7fafc}
     <!-- LAST SECTION: Weekly status -->
     <div class="card">
       <div class="ct">📅 My Weekly Submission Status</div>
-      <div class="ctsub">Week runs Saturday → Friday · ✓ submitted · ❓ missed · – week in progress</div>
+      <div class="ctsub">1 Jun – 18 Nov 2026 · Week 1: 1–5 Jun, then Sat→Fri · ✓ submitted · ❓ missed · – week in progress</div>
       <div id="wg-member"></div>
     </div>
   </div>
@@ -164,7 +164,7 @@ tr:hover td{background:#f7fafc}
 
     <div class="card">
       <div class="ct">📅 Weekly Submission Tracker</div>
-      <div class="ctsub">Week runs Saturday → Friday · Scroll right for more weeks</div>
+      <div class="ctsub">1 Jun – 18 Nov 2026 · Week 1: 1–5 Jun, then Sat→Fri · scroll right for more weeks</div>
       <div id="wg-admin"></div>
       <div class="wg-legend">
         <span style="color:#276749">✓ Submitted</span>
@@ -254,7 +254,8 @@ const TARGET_DIAL    = 100;
 const DAIMOKU_MIN_TO_COUNT = 40;
 
 const GROUPS = ['WD','YWD','MD','YMD'];
-const WEEKS_TO_SHOW = 8; // how many past weeks to display in the weekly tracker
+const CALENDAR_START = '2026-06-01';   // Week 1 begins here (partial week: Mon–Fri)
+const CALENDAR_END   = '2026-11-18';   // Calendar ends here
 // ============================================================
 
 let members=[], entries=[], adminUnlocked=false;
@@ -330,24 +331,28 @@ function renderTargetChart() {
   });
 }
 
-// ===== WEEKLY SUBMISSION TRACKER (Sat → Fri) =====
-function startOfWeek(d){
-  const day = d.getDay(); // 0=Sun..6=Sat
-  const diff = (day - 6 + 7) % 7;
-  const s = new Date(d);
-  s.setDate(d.getDate() - diff);
-  s.setHours(0,0,0,0);
-  return s;
-}
+// ===== WEEKLY SUBMISSION TRACKER (Sat → Fri, fixed calendar range) =====
 function addDays(d,n){ const r=new Date(d); r.setDate(r.getDate()+n); return r; }
 function fmtShort(d){ const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return d.getDate()+' '+months[d.getMonth()]; }
-function buildWeeks(n){
-  const today = new Date(); today.setHours(0,0,0,0);
-  const curStart = startOfWeek(today);
-  const weeks=[];
-  for(let i=n-1;i>=0;i--){
-    const ws = addDays(curStart, -7*i);
-    weeks.push({start:ws, end:addDays(ws,6)});
+function buildFixedWeeks(){
+  const start = new Date(CALENDAR_START+'T00:00:00');
+  const end = new Date(CALENDAR_END+'T00:00:00');
+  const weeks = [];
+  let cursor = new Date(start);
+  // First week may be partial if start isn't a Saturday (e.g. Jun 1 → Jun 5)
+  if (cursor.getDay() !== 6) {
+    const daysToSat = (6 - cursor.getDay() + 7) % 7;
+    let firstEnd = addDays(cursor, daysToSat - 1);
+    if (firstEnd > end) firstEnd = new Date(end);
+    weeks.push({ start: new Date(cursor), end: firstEnd });
+    cursor = addDays(cursor, daysToSat);
+  }
+  // Regular Saturday→Friday weeks until the end date
+  while (cursor <= end) {
+    let weekEnd = addDays(cursor, 6);
+    if (weekEnd > end) weekEnd = new Date(end);
+    weeks.push({ start: new Date(cursor), end: weekEnd });
+    cursor = addDays(cursor, 7);
   }
   return weeks;
 }
@@ -360,7 +365,7 @@ function renderWeeklyGrid(){
   const el = document.getElementById('wg-admin');
   if(!el) return;
   if(!members.length){ el.innerHTML = '<p class="em">No members yet.</p>'; return; }
-  const weeks = buildWeeks(WEEKS_TO_SHOW);
+  const weeks = buildFixedWeeks();
   const today = new Date(); today.setHours(0,0,0,0);
 
   const header = '<tr><th class="wg-sticky-th">Member</th>' +
@@ -386,7 +391,7 @@ function renderWeeklyMember(){
   if(!el) return;
   const mem = gv('mm');
   if(!mem){ el.innerHTML = '<p class="em">Select your name above to see your weekly status.</p>'; return; }
-  const weeks = buildWeeks(WEEKS_TO_SHOW);
+  const weeks = buildFixedWeeks();
   const today = new Date(); today.setHours(0,0,0,0);
 
   el.innerHTML = '<div class="wgm-scroll">' + weeks.map(w=>{
