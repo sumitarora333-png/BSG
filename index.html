@@ -357,8 +357,22 @@ function buildFixedWeeks(){
   return weeks;
 }
 function entryInWeek(e, week){
-  const ed = new Date(e.date+'T00:00:00');
+  const ed = parseDateOnly(e.date);
+  if(!ed) return false;
   return ed >= week.start && ed <= week.end;
+}
+function parseDateOnly(val){
+  if(!val) return null;
+  const s = String(val).trim();
+  // YYYY-MM-DD (handles trailing time too, e.g. "2026-06-19 00:00:00")
+  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if(m) return new Date(+m[1], +m[2]-1, +m[3]);
+  // MM/DD/YYYY
+  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if(m) return new Date(+m[3], +m[1]-1, +m[2]);
+  // Fallback: let JS try (handles full Date.toString() formats like "Fri Jun 19 2026 00:00:00 GMT+0530")
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
 function renderWeeklyGrid(){
